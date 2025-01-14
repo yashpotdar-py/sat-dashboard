@@ -158,10 +158,10 @@ while True:
             try:
                 with map_placeholder.container():
                     st.markdown('<h2 class="subheader">GPS Location</h2>', unsafe_allow_html=True)
-                    # latitude = float(get_sensor_value(sensor_data, "6"))  # Assuming GPS latitude is sensor 6
-                    # longitude = float(get_sensor_value(sensor_data, "7"))  # Assuming GPS longitude is sensor 7
-                    latitude = 18.5401344  # Example latitude
-                    longitude = 73.875456  # Example longitude
+                    latitude = float(get_sensor_value(sensor_data, "6"))  # Assuming GPS latitude is sensor 6
+                    longitude = float(get_sensor_value(sensor_data, "7"))  # Assuming GPS longitude is sensor 7
+                    # latitude = 18.5401344  # Example latitude
+                    # longitude = 73.875456  # Example longitude
                     # Create a map centered at the GPS coordinates
                     m = folium.Map(location=[latitude, longitude], zoom_start=15)
                     # Add a marker for the current position
