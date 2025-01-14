@@ -20,9 +20,12 @@ API_URL = "http://54.146.171.112:5000/getSensorData"
 def fetch_sensor_data():
     try:
         response = requests.get(API_URL)
+        print(f"Connecting to {API_URL}")
         if response.status_code == 200:
+            print(f"Data fetched successfully: {response.json()}")
             return response.json()["data"]
         else:
+            print(f"Error fetching data: {response.status_code}")
             st.error(f"Error fetching data: {response.status_code}")
             return []
     except Exception as e:
@@ -35,6 +38,7 @@ def fetch_sensor_data():
 def get_sensor_value(sensor_data, selector):
     for sensor in sensor_data:
         if sensor["selector"] == selector:
+            print(f"Sensor {selector} data: {sensor['data']}")
             return sensor["data"]
     return "N/A"
 
@@ -61,6 +65,7 @@ while True:
         # Temperature
         with col1:
             temperature = get_sensor_value(sensor_data, "1")
+            print("Temperature: ", temperature)
 
             st.metric(
                 label="🌡️ Temperature",
@@ -72,6 +77,7 @@ while True:
         # Humidity
         with col2:
             humidity = get_sensor_value(sensor_data, "2")
+            print("Humidity: ", humidity)
 
             st.metric(
                 label="💧 Humidity",
@@ -83,6 +89,7 @@ while True:
         # Altitude
         with col3:
             altitude = get_sensor_value(sensor_data, "3")
+            print("Altitude: ", altitude)
 
             st.metric(
                 label="🏔️ Altitude",
@@ -94,6 +101,7 @@ while True:
         # Pressure
         with col4:
             pressure = get_sensor_value(sensor_data, "4")
+            print("Pressure: ", pressure)
 
             st.metric(
                 label="🌪️ Pressure",
@@ -105,6 +113,7 @@ while True:
         # UV Index
         with col5:
             uv_index = get_sensor_value(sensor_data, "5")
+            print("UV Index: ", uv_index)
 
             st.metric(
                 label="☀️ UV Index",
