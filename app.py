@@ -1,9 +1,9 @@
 import time
 from datetime import datetime
 
+import folium
 import requests
 import streamlit as st
-import folium
 from streamlit_folium import folium_static
 
 # Set page configuration and styling
@@ -20,6 +20,8 @@ except Exception as e:
 API_URL = "http://54.146.171.112:5000/getSensorData"
 
 # Function to fetch sensor data from the API
+
+
 def fetch_sensor_data():
     try:
         response = requests.get(API_URL)
@@ -42,6 +44,8 @@ def fetch_sensor_data():
         return []
 
 # Extract specific sensor data
+
+
 def get_sensor_value(sensor_data, selector):
     try:
         for sensor in sensor_data:
@@ -53,10 +57,12 @@ def get_sensor_value(sensor_data, selector):
         print(f"Error getting sensor value: {e}")
         return "N/A"
 
+
 # Dashboard title
 try:
     st.title("Real-Time Satellite Dashboard")
     st.markdown('<p class="subheader">Live monitoring of environmental conditions</p>', unsafe_allow_html=True)
+    last_update_placeholder = st.empty()
 except Exception as e:
     st.error(f"Error rendering title: {e}")
 
@@ -69,8 +75,13 @@ except Exception as e:
     sensor_data_placeholder = None
     map_placeholder = None
 
+last_map_update = 0
 while True:
     try:
+        # Update last updated time
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        last_update_placeholder.markdown(f'<p style="font-size:10px">Last updated: {current_time}</p>', unsafe_allow_html=True)
+        
         # Fetch sensor data
         sensor_data = fetch_sensor_data()
 
@@ -153,38 +164,48 @@ while True:
                     )
             except Exception as e:
                 st.error(f"Error displaying UV index: {e}")
+            st.markdown("---")
 
-            # GPS Map
+        # GPS Map
+        current_time = time.time()
+        if current_time - last_map_update >= 10:
             try:
                 with map_placeholder.container():
                     st.markdown('<h2 class="subheader">GPS Location</h2>', unsafe_allow_html=True)
                     latitude = float(get_sensor_value(sensor_data, "6"))  # Assuming GPS latitude is sensor 6
                     longitude = float(get_sensor_value(sensor_data, "7"))  # Assuming GPS longitude is sensor 7
-                    # latitude = 18.5401344  # Example latitude
-                    # longitude = 73.875456  # Example longitude
-                    # Create a map centered at the GPS coordinates
-                    m = folium.Map(location=[latitude, longitude], zoom_start=15)
-                    # Add a marker for the current position
-                    folium.Marker(
-                        [latitude, longitude],
-                        popup="Current Position",
-                        icon=folium.Icon(color="red", icon="info-sign"),
-                    ).add_to(m)
-                    # Display the map
-                    folium_static(m)
+                    
+                    col1, col2 = st.columns([1, 2])
+                    
+                    with col1:
+                        st.metric(
+                            label="📍 Latitude",
+                            value=f"{latitude:.6f}°",
+                            delta=None,
+                            delta_color="normal"
+                        )
+                        st.metric(
+                            label="📍 Longitude",
+                            value=f"{longitude:.6f}°",
+                            delta=None,
+                            delta_color="normal"
+                        )
+                        st.markdown(f'<p style="font-size:10px">Map last updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>', unsafe_allow_html=True)
+                    
+                    with col2:
+                        m = folium.Map(location=[latitude, longitude], zoom_start=15)
+                        # Add a marker for the current position
+                        folium.Marker(
+                            [latitude, longitude],
+                            popup="Current Position",
+                            icon=folium.Icon(color="red", icon="info-sign"),
+                        ).add_to(m)
+                        # Display the map
+                        folium_static(m)
+                last_map_update = current_time
             except Exception as e:
                 st.error(f"Error displaying map: {e}")
 
-            # Footer
-            try:
-                st.markdown("---")
-                st.markdown(
-                    '<div class="footer">Real-time sensor dashboard built with ❤️<br>'
-                    f'Last updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</div>',
-                    unsafe_allow_html=True
-                )
-            except Exception as e:
-                st.error(f"Error displaying footer: {e}")
 
     except Exception as e:
         st.error(f"Error in main loop: {e}")
