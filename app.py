@@ -3,20 +3,23 @@ from datetime import datetime
 
 import requests
 import streamlit as st
+import folium
+from streamlit_folium import folium_static
 
 # Set page configuration and styling
-st.set_page_config(
-    page_title="Satellite Dashboard",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+try:
+    st.set_page_config(
+        page_title="Satellite Dashboard",
+        layout="wide",
+        initial_sidebar_state="collapsed"
+    )
+except Exception as e:
+    st.error(f"Error setting page config: {e}")
 
 # API URL
 API_URL = "http://54.146.171.112:5000/getSensorData"
 
 # Function to fetch sensor data from the API
-
-
 def fetch_sensor_data():
     try:
         response = requests.get(API_URL)
@@ -28,107 +31,168 @@ def fetch_sensor_data():
             print(f"Error fetching data: {response.status_code}")
             st.error(f"Error fetching data: {response.status_code}")
             return []
+    except requests.RequestException as e:
+        st.error(f"Network Error: {e}")
+        return []
+    except ValueError as e:
+        st.error(f"JSON Parsing Error: {e}")
+        return []
     except Exception as e:
-        st.error(f"Error: {e}")
+        st.error(f"Unexpected Error: {e}")
         return []
 
 # Extract specific sensor data
-
-
 def get_sensor_value(sensor_data, selector):
-    for sensor in sensor_data:
-        if sensor["selector"] == selector:
-            print(f"Sensor {selector} data: {sensor['data']}")
-            return sensor["data"]
-    return "N/A"
-
-
+    try:
+        for sensor in sensor_data:
+            if sensor["selector"] == selector:
+                print(f"Sensor {selector} data: {sensor['data']}")
+                return sensor["data"]
+        return "N/A"
+    except Exception as e:
+        print(f"Error getting sensor value: {e}")
+        return "N/A"
 
 # Dashboard title
-st.title("Real-Time Satellite Dashboard")
-st.markdown('<p class="subheader">Live monitoring of environmental conditions</p>', unsafe_allow_html=True)
+try:
+    st.title("Real-Time Satellite Dashboard")
+    st.markdown('<p class="subheader">Live monitoring of environmental conditions</p>', unsafe_allow_html=True)
+except Exception as e:
+    st.error(f"Error rendering title: {e}")
 
 # Create a placeholder for the sensor data
-sensor_data_placeholder = st.empty()
+try:
+    sensor_data_placeholder = st.empty()
+    map_placeholder = st.empty()
+except Exception as e:
+    st.error(f"Error creating placeholder: {e}")
+    sensor_data_placeholder = None
+    map_placeholder = None
 
 while True:
-    # Fetch sensor data
-    sensor_data = fetch_sensor_data()
+    try:
+        # Fetch sensor data
+        sensor_data = fetch_sensor_data()
 
-    with sensor_data_placeholder.container():
-        # Display all sensor data on the same page
+        with sensor_data_placeholder.container():
+            # Display all sensor data on the same page
+            st.markdown('<h2 class="subheader">Sensor Data Overview</h2>', unsafe_allow_html=True)
 
-        st.markdown('<h2 class="subheader">Sensor Data Overview</h2>', unsafe_allow_html=True)
+            try:
+                col1, col2, col3, col4, col5 = st.columns(5)
+            except Exception as e:
+                st.error(f"Error creating columns: {e}")
+                continue
 
-        col1, col2, col3, col4, col5 = st.columns(5)
+            # Temperature
+            try:
+                with col1:
+                    temperature = get_sensor_value(sensor_data, "1")
+                    print("Temperature: ", temperature)
+                    st.metric(
+                        label="🌡️ Temperature",
+                        value=f"{temperature} °C",
+                        delta=None,
+                        delta_color="normal"
+                    )
+            except Exception as e:
+                st.error(f"Error displaying temperature: {e}")
 
-        # Temperature
-        with col1:
-            temperature = get_sensor_value(sensor_data, "1")
-            print("Temperature: ", temperature)
+            # Humidity
+            try:
+                with col2:
+                    humidity = get_sensor_value(sensor_data, "2")
+                    print("Humidity: ", humidity)
+                    st.metric(
+                        label="💧 Humidity",
+                        value=f"{humidity} %",
+                        delta=None,
+                        delta_color="normal"
+                    )
+            except Exception as e:
+                st.error(f"Error displaying humidity: {e}")
 
-            st.metric(
-                label="🌡️ Temperature",
-                value=f"{temperature} °C",
-                delta=None,
-                delta_color="normal"
-            )
+            # Altitude
+            try:
+                with col3:
+                    altitude = get_sensor_value(sensor_data, "3")
+                    print("Altitude: ", altitude)
+                    st.metric(
+                        label="🏔️ Altitude",
+                        value=f"{altitude} m",
+                        delta=None,
+                        delta_color="normal"
+                    )
+            except Exception as e:
+                st.error(f"Error displaying altitude: {e}")
 
-        # Humidity
-        with col2:
-            humidity = get_sensor_value(sensor_data, "2")
-            print("Humidity: ", humidity)
+            # Pressure
+            try:
+                with col4:
+                    pressure = get_sensor_value(sensor_data, "4")
+                    print("Pressure: ", pressure)
+                    st.metric(
+                        label="🌪️ Pressure",
+                        value=f"{pressure} hPa",
+                        delta=None,
+                        delta_color="normal"
+                    )
+            except Exception as e:
+                st.error(f"Error displaying pressure: {e}")
 
-            st.metric(
-                label="💧 Humidity",
-                value=f"{humidity} %",
-                delta=None,
-                delta_color="normal"
-            )
+            # UV Index
+            try:
+                with col5:
+                    uv_index = get_sensor_value(sensor_data, "5")
+                    print("UV Index: ", uv_index)
+                    st.metric(
+                        label="☀️ UV Index",
+                        value=uv_index,
+                        delta=None,
+                        delta_color="normal"
+                    )
+            except Exception as e:
+                st.error(f"Error displaying UV index: {e}")
 
-        # Altitude
-        with col3:
-            altitude = get_sensor_value(sensor_data, "3")
-            print("Altitude: ", altitude)
+            # GPS Map
+            try:
+                with map_placeholder.container():
+                    st.markdown('<h2 class="subheader">GPS Location</h2>', unsafe_allow_html=True)
+                    # latitude = float(get_sensor_value(sensor_data, "6"))  # Assuming GPS latitude is sensor 6
+                    # longitude = float(get_sensor_value(sensor_data, "7"))  # Assuming GPS longitude is sensor 7
+                    latitude = 18.5401344  # Example latitude
+                    longitude = 73.875456  # Example longitude
+                    # Create a map centered at the GPS coordinates
+                    m = folium.Map(location=[latitude, longitude], zoom_start=15)
+                    # Add a marker for the current position
+                    folium.Marker(
+                        [latitude, longitude],
+                        popup="Current Position",
+                        icon=folium.Icon(color="red", icon="info-sign"),
+                    ).add_to(m)
+                    # Display the map
+                    folium_static(m)
+            except Exception as e:
+                st.error(f"Error displaying map: {e}")
 
-            st.metric(
-                label="🏔️ Altitude",
-                value=f"{altitude} m",
-                delta=None,
-                delta_color="normal"
-            )
+            # Footer
+            try:
+                st.markdown("---")
+                st.markdown(
+                    '<div class="footer">Real-time sensor dashboard built with ❤️<br>'
+                    f'Last updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</div>',
+                    unsafe_allow_html=True
+                )
+            except Exception as e:
+                st.error(f"Error displaying footer: {e}")
 
-        # Pressure
-        with col4:
-            pressure = get_sensor_value(sensor_data, "4")
-            print("Pressure: ", pressure)
+    except Exception as e:
+        st.error(f"Error in main loop: {e}")
 
-            st.metric(
-                label="🌪️ Pressure",
-                value=f"{pressure} hPa",
-                delta=None,
-                delta_color="normal"
-            )
-
-        # UV Index
-        with col5:
-            uv_index = get_sensor_value(sensor_data, "5")
-            print("UV Index: ", uv_index)
-
-            st.metric(
-                label="☀️ UV Index",
-                value=uv_index,
-                delta=None,
-                delta_color="normal"
-            )
-
-        # Footer
-        st.markdown("---")
-
-        st.markdown(
-            '<div class="footer">Real-time sensor dashboard built with ❤️<br>'
-            f'Last updated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</div>',
-            unsafe_allow_html=True
-        )
-
-    time.sleep(2)
+    try:
+        time.sleep(2)
+    except KeyboardInterrupt:
+        break
+    except Exception as e:
+        st.error(f"Error in sleep: {e}")
+        time.sleep(5)  # Fallback sleep duration
