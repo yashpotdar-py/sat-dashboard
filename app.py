@@ -81,7 +81,7 @@ class MetricsComponent(BaseComponent):
 
 class MapComponent(BaseComponent):
     """Handles map display using Google Maps."""
-    # self.GOOGLE_MAPS_API_KEY = st.secrets['GOOGLE_MAPS_API_KEY']  # Replace with your API key
+    self.GOOGLE_MAPS_API_KEY = st.secrets['GOOGLE_MAPS_API_KEY']  # Replace with your API key
 
     def display_map(self, sensor_data):
         logging.debug("Displaying map...")
