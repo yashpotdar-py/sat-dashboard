@@ -81,65 +81,66 @@ class MetricsComponent(BaseComponent):
 
 class MapComponent(BaseComponent):
     """Handles map display using Google Maps."""
-    self.GOOGLE_MAPS_API_KEY = st.secrets['GOOGLE_MAPS_API_KEY']  # Replace with your API key
+    # self.GOOGLE_MAPS_API_KEY = st.secrets['GOOGLE_MAPS_API_KEY']  # Replace with your API key
 
     def display_map(self, sensor_data):
         logging.debug("Displaying map...")
-        latitude = float(SatSensors.get_value(sensor_data, "6"))
-        longitude = float(SatSensors.get_value(sensor_data, "7"))
-
-        map_html = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <script src="https://maps.googleapis.com/maps/api/js?key={self.GOOGLE_MAPS_API_KEY}"></script>
-            <style>
-                #map {{
-                    height: 500px;
-                    width: 100%;
-                    border-radius: 10px;
-                }}
-            </style>
-        </head>
-        <body>
-            <div id="map"></div>
-            <script>
-                function initMap() {{
-                    var location = {{ lat: {latitude}, lng: {longitude} }};
-                    var map = new google.maps.Map(document.getElementById('map'), {{
-                        zoom: 15,
-                        center: location
-                    }});
-                    var marker = new google.maps.Marker({{
-                        position: location,
-                        map: map,
-                        title: "Current Position"
-                    }});
-                }}
-                window.onload = initMap;
-            </script>
-        </body>
-        </html>
-        """
+        # latitude = float(SatSensors.get_value(sensor_data, "6"))
+        # longitude = float(SatSensors.get_value(sensor_data, "7"))
+        gpsData = SatSensors.get_value(sensor_data, "6")
+        # map_html = f"""
+        # <!DOCTYPE html>
+        # <html>
+        # <head>
+        #     <script src="https://maps.googleapis.com/maps/api/js?key={self.GOOGLE_MAPS_API_KEY}"></script>
+        #     <style>
+        #         #map {{
+        #             height: 500px;
+        #             width: 100%;
+        #             border-radius: 10px;
+        #         }}
+        #     </style>
+        # </head>
+        # <body>
+        #     <div id="map"></div>
+        #     <script>
+        #         function initMap() {{
+        #             var location = {{ lat: {latitude}, lng: {longitude} }};
+        #             var map = new google.maps.Map(document.getElementById('map'), {{
+        #                 zoom: 15,
+        #                 center: location
+        #             }});
+        #             var marker = new google.maps.Marker({{
+        #                 position: location,
+        #                 map: map,
+        #                 title: "Current Position"
+        #             }});
+        #         }}
+        #         window.onload = initMap;
+        #     </script>
+        # </body>
+        # </html>
+        # """
 
         col1, col2 = st.columns([1, 2])
 
         with col1:
-            st.metric(
-                label="📍 Latitude",
-                value=f"{latitude:.6f}°",
-                delta=None,
-                delta_color="normal"
-            )
-            st.metric(
-                label="📍 Longitude",
-                value=f"{longitude:.6f}°",
-                delta=None,
-                delta_color="normal"
-            )
-
+            # st.metric(
+            #     label="📍 Latitude",
+            #     value=f"{latitude:.6f}°",
+            #     delta=None,
+            #     delta_color="normal"
+            # )
+            # st.metric(
+            #     label="📍 Longitude",
+            #     value=f"{longitude:.6f}°",
+            #     delta=None,
+            #     delta_color="normal"
+            # )
+            st.write(gpsData)
         with col2:
-            st.components.v1.html(map_html, height=500)
+            # st.components.v1.html(map_html, height=500)
+            pass
         logging.debug("Map displayed.")
 
 
